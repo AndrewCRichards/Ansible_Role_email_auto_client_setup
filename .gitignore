@@ -1,0 +1,10 @@
+# Vagrant files
+.vagrant
+
+# Swap files
+*.swp
+
+vars/main.yml
+
+# Any local templates,
+templates/local/*

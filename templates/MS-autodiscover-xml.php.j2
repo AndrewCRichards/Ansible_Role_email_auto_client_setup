@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?php
+//{{ansible_managed}}
+//get raw POST data so we can extract the email address
+$data = file_get_contents("php://input");
+
+preg_match("/\<EMailAddress\>(.*?)\<\/EMailAddress\>/", $data, $matches);
+// Not sure how UTF-savvy/-correct PHP is, so this may break for some
+// addresses with UTF characters not represented within 7-bit ASCII
+// (previous code was just:) $cleaned_address = filter_var($matches[1],FILTER_SANITIZE_EMAIL);
+if(isset($matches[1])) $cleaned_address = filter_var($matches[1],FILTER_SANITIZE_EMAIL);
+else $cleaned_address="error@domain.missing";
+
+//set Content-Type
+header("Content-Type: application/xml");
+?>
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+  <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+    <Account>
+    <AccountType>email</AccountType>
+    <Action>settings</Action>
+    <ServiceHome>http://{{item.email_settings.provider_domain}}</ServiceHome>
+    <Protocol>
+{# IMAP <Protocol> section first so it is preferred over POP3 ("Precedence for XML settings") #}
+      <Type>IMAP</Type>
+      <Server>{{item.email_settings.imap_server}}</Server>
+      <Port>143</Port>
+      <DomainRequired>on</DomainRequired>
+{# <DomainName>{{item.domain_name}}</DomainName> #}{# DomainName taken out since it prevents the use of CNAME/SRV #}
+      <LoginName><?php echo $cleaned_address; ?></LoginName>
+      <SPA>off</SPA>
+      <SSL>on</SSL>
+{# Encryption tag supercedes SSL tag, but SSL tag gives no way to specify TLS. Outlook 2007 doesn't understand it alas #}
+      <Encryption>TLS</Encryption>
+      <AuthRequired>on</AuthRequired>
+    </Protocol>
+    <Protocol>
+      <Type>POP3</Type>
+      <Server>{{item.email_settings.pop3_server}}</Server>
+      <Port>110</Port>
+      <DomainRequired>on</DomainRequired>
+{# <DomainName>{{item.domain_name}}</DomainName> #}{# DomainName taken out since it prevents the use of CNAME/SRV #}
+      <LoginName><?php echo $cleaned_address; ?></LoginName>
+      <SPA>off</SPA>
+      <SSL>on</SSL>
+      <Encryption>TLS</Encryption>
+      <AuthRequired>on</AuthRequired>
+    </Protocol>
+    <Protocol>
+      <Type>SMTP</Type>
+      <Server>{{item.email_settings.submission_server}}</Server>
+      <Port>587</Port>
+      <DomainRequired>on</DomainRequired>
+{# <DomainName>{{item.domain_name}}</DomainName> #}{# DomainName taken out since it prevents the use of CNAME/SRV #}
+      <LoginName><?php echo $cleaned_address; ?></LoginName>
+      <SPA>off</SPA>
+      <SSL>on</SSL>
+      <Encryption>TLS</Encryption>
+      <AuthRequired>on</AuthRequired>
+      <UsePOPAuth>off</UsePOPAuth>
+      <SMTPLast>off</SMTPLast>
+    </Protocol>
+    </Account>
+  </Response>
+</Autodiscover>

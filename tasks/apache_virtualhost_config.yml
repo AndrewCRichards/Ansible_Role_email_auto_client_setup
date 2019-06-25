@@ -1,0 +1,37 @@
+---
+# Copyright (C) 2019 Andrew Richards 
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# See free.acrconsulting.co.uk for possible further info
+
+- name: Generate virtualhost file
+  become: True
+  template:
+    src   : "{{lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['shared-auto.vhost.j2']}) }}"
+    dest: "/etc/apache2/sites-available/{{item.domain_name}}.conf"
+    group: root
+    owner: root
+    mode: 0644
+    backup: yes
+  notify: [ "restart apache" ]
+  when: item.setup_vhost|default(email_auto_client_setup_defaults.setup_vhost)
+
+- name: Enable site
+  become: True
+  shell: "a2ensite {{item.domain_name}}"
+  register: apache_ensite
+  changed_when: apache_ensite.stdout.endswith('already enabled') == false
+  notify: [ "restart apache" ]
+  when: item.setup_vhost|default(email_auto_client_setup_defaults.setup_vhost)

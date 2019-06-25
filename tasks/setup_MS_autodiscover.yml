@@ -1,0 +1,46 @@
+---
+# Copyright (C) 2019 Andrew Richards 
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# See free.acrconsulting.co.uk for possible further info
+
+
+# Microsoft autodiscover:
+# autodiscover settings file found at these 2 possible locations (note same directory path),
+# https://example.org/autodiscover/autodiscover.xml
+# https://autodiscover.example.org/autodiscover/autodiscover.xml
+# ...with the 1st variant checked first; pertinent to a SRV setup
+# In addition Microsoft's own diagnostics tool looks for Autodiscover/Autodiscover.xml
+# - set this up using an alias in the vhost file later.
+
+- name : Create directories for Microsoft email settings files
+  become : True
+  file :
+    state : directory
+    dest  : "{{item.document_root}}/autodiscover"
+    group : root
+    owner : root
+    mode  : 0755
+  when: item.setup_MS|default(email_auto_client_setup_defaults.setup_MS)
+
+- name : generate Microsoft email settings script to go in /autodiscover...
+  become : True
+  template :
+    src   : "{{lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['MS-autodiscover-xml.php.j2']}) }}"
+    dest  : "{{item.document_root}}/autodiscover/autodiscover_xml.php"
+    group : root
+    owner : root
+    mode  : 0644
+  when: item.setup_MS|default(email_auto_client_setup_defaults.setup_MS)

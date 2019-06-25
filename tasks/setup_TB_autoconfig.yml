@@ -1,0 +1,63 @@
+---
+# Copyright (C) 2019 Andrew Richards 
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# Thunderbird autoconfig:
+# autoconfig file can go in either or both of 2 possible locations:
+# http://autoconfig.example.com/mail/config-v1.1.xml?emailaddress=fred@example.com
+# http://example.com/.well-known/autoconfig/mail/config-v1.1.xml?emailaddress=fred@example.com
+# ...with the 1st variant checked first (so taking priority); 2nd variant is
+# pertinent to a setup with DNS CNAME records
+
+- name : Create .well-known... directories for Thunderbird email settings files
+  become : True
+  file :
+    state : directory
+    dest  : "{{item.document_root}}/.well-known/autoconfig/mail"
+    group : root
+    owner : root
+    mode  : 0755
+  when: item.setup_TB|default(email_auto_client_setup_defaults.setup_TB)
+
+- name : Create mail directory for Thunderbird email settings files
+  become : True
+  file :
+    state : directory
+    dest  : "{{item.document_root}}/mail"
+    group : root
+    owner : root
+    mode  : 0755
+  when: item.setup_TB|default(email_auto_client_setup_defaults.setup_TB)
+
+- name : generate Thunderbird email settings file in .well-known...
+  become : True
+  template :
+    src   : "{{lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['TB-settings.xml.j2']}) }}"
+    dest  : "{{item.document_root}}/.well-known/autoconfig/mail/config-v1.1.xml"
+    group : root
+    owner : root
+    mode  : 0644
+  when: item.setup_TB|default(email_auto_client_setup_defaults.setup_TB)
+
+- name : generate Thunderbird email settings file in mail...
+  become : True
+  template :
+    src   : "{{lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['TB-settings.xml.j2']}) }}"
+    dest  : "{{item.document_root}}/mail/config-v1.1.xml"
+    group : root
+    owner : root
+    mode  : 0644
+  when: item.setup_TB|default(email_auto_client_setup_defaults.setup_TB)

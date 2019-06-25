@@ -1,0 +1,83 @@
+# {{ansible_managed}}
+# This site is used to provide email client autoconfiguration details
+# for Microsoft autodiscover-standard and Thunderbird autoconfig-standard email
+# clients, so serving,
+#    https://<site>/autodiscover/autodiscover.xml (Microsoft)
+#    http://<site>/mail/config-v1.1.xml (Thunderbird)
+# The Microsoft page has to include the supplied [in POST data] email address,
+# so some method of generating the XML file dynamically is needed; PHP is what
+# most sites have used for this, so that's what's used here too.
+# Microsoft may also use a GET HTTP request, see,
+#    https://docs.microsoft.com/en-us/exchange/client-developer/exchange-web-services/autodiscover-for-exchange#sending-an-unauthenticated-get-request
+# A typical setup would be via DNS CNAME records, thus for example,
+# Thunderbird: autoconfig.example.org -----> some.central.domain
+# Microsoft:   autodiscover.example.org ---> some.central.domain
+#
+# This playbook sets up the web server parts of some.central.domain in the
+# above example; example.org in the above example is a domain for which
+# you're setting up autodiscover / autoconfig for email clients.
+#
+# Give minimal directory rights since this is not a normal site for browsing,
+
+<VirtualHost *:80>
+    ServerAdmin {{item.server_admin}}
+
+    DocumentRoot {{item.document_root}}
+    ServerName {{item.domain_name}}
+    LogLevel info
+
+    Alias "/autodiscover/autodiscover.xml" "{{item.document_root}}/autodiscover/autodiscover_xml.php"
+    # With an upper-case 'A' in 'Autodiscover' too, see note below,
+    Alias "/Autodiscover/Autodiscover.xml" "{{item.document_root}}/autodiscover/autodiscover_xml.php"
+
+    ErrorLog ${APACHE_LOG_DIR}/{{item.domain_name}}-http-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{item.domain_name}}-http-access.log combined
+
+    <Directory {{item.document_root}}>
+        Options -Indexes -Includes -MultiViews
+        AllowOverride None
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+{# <IfModule mod_ssl.c> #}
+<VirtualHost *:443>
+    ServerAdmin {{item.server_admin}}
+
+    DocumentRoot {{item.document_root}}
+    ServerName {{item.domain_name}}
+    LogLevel info ssl:warn
+
+    # autodiscover.xml generally accessed via HTTPS POST request,
+    Alias "/autodiscover/autodiscover.xml" "{{item.document_root}}/autodiscover/autodiscover_xml.php"
+    #  Whilst Microsoft's definition of their autodiscover standard uses lowercase for the URL,
+    #  their connectivity analyser tool uses initial capitals, so maybe some clients do too,
+    Alias "/Autodiscover/Autodiscover.xml" "{{item.document_root}}/autodiscover/autodiscover_xml.php"
+
+    ErrorLog ${APACHE_LOG_DIR}/{{item.domain_name}}-https-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{item.domain_name}}-https-access.log combined
+
+    SSLEngine on
+{% if 'vagrant' in group_names %}
+    SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+    SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+{% else %}
+    SSLCertificateFile /etc/letsencrypt/live/{{item.domain_name}}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/{{item.domain_name}}/privkey.pem
+{% endif %}
+
+{#
+    # (PHP only needed via https for Microsoft-style autoconfiguration file)
+    # and maybe don't need this atall,
+    <FilesMatch "\.php$">
+            SSLOptions +StdEnvVars
+    </FilesMatch>
+#}
+    <Directory {{item.document_root}}>
+        Options -Indexes -Includes -MultiViews
+        AllowOverride None
+        Require all granted
+    </Directory>
+</VirtualHost>
+{# </IfModule> #}
+

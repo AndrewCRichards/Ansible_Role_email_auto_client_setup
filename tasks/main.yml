@@ -1,0 +1,44 @@
+---
+# Copyright (C) 2019 Andrew Richards 
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# See free.acrconsulting.co.uk for possible further info
+
+# This playbook sets up files and Apache vhost file(s) that can serve autodiscover files
+# for Microsoft over HTTPS (and using PHP), and autoconfig files for Thunderbird over HTTP
+
+# A typical setup would be via DNS CNAME records, thus for example,
+# Thunderbird: autoconfig.example.org -----> some.central.domain
+# Microsoft:   autodiscover.example.org ---> some.central.domain
+#
+# This playbook sets up the web server parts of some.central.domain in the
+# above example; example.org in the above example is a domain for which
+# you're setting up autodiscover / autoconfig for email clients.
+
+- include: check_web_server_installed.yml 
+
+- include: setup_TB_autoconfig.yml
+  with_items : "{{email_auto_client_setup_vhosts}}"
+
+- include: setup_MS_autodiscover.yml
+  with_items : "{{email_auto_client_setup_vhosts}}"
+
+- include: enable_apache_required_modules.yml 
+  when: email_auto_client_setup_web_server_package_name == "apache2" and
+        email_auto_client_setup_web_server_modules_etc == True
+
+- include: apache_virtualhost_config.yml
+  with_items : "{{email_auto_client_setup_vhosts}}"
+  when: email_auto_client_setup_web_server_package_name == "apache2"

@@ -1,0 +1,10 @@
+---
+
+# Handlers file for email_auto_client_setup
+
+- name: restart apache
+  become: True
+  service:
+    name  : apache2
+    state : restarted
+

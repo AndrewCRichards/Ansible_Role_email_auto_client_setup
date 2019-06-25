@@ -1,0 +1,7 @@
+---
+- name: Enable SSL, PHP, alias modules if not yet enabled
+  become: True
+  apache2_module:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{email_auto_client_setup_web_server_modules_to_enable}}"

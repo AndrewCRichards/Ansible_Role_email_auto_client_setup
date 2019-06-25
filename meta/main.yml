@@ -1,0 +1,36 @@
+galaxy_info:
+  author: Andrew Richards
+  role_name: email_auto_client_setup
+  description: email autoconfig & autodiscover setup with Apache vhost config
+  company: acrconsulting.co.uk
+  license: GPLv3
+  min_ansible_version: 2.2
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+    - name: Fedora
+      versions:
+        - all
+    - name: FreeBSD
+      versions:
+        - all
+    - name: Solaris
+      versions:
+        - all
+
+  # (...etc)(most platforms should work, esp. Linux- and *BSD-based)
+
+  galaxy_tags:
+    - autodiscover
+    - autoconfig
+
+dependencies: []
+  # List your role dependencies here, one per line. Be sure to remove the '[]' above,
+  # if you add dependencies to this list.

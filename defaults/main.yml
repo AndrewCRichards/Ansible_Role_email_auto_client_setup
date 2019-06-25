@@ -1,0 +1,22 @@
+---
+
+# Defaults file for email_auto_client_setup
+
+email_auto_client_setup_web_server_package_name: apache2
+email_auto_client_setup_web_server_modules_etc: True
+email_auto_client_setup_web_server_modules_to_enable:
+    - ssl
+    - alias
+email_auto_client_setup_template_locations:
+    - "{{ inventory_dir }}/templates/{{ inventory_hostname }}/{{ role_name }}"
+    - "{{ inventory_dir }}/templates/{{ role_name }}"
+    - "{{ role_path }}/templates/local"
+    - "{{ role_path }}/templates"
+
+email_auto_client_setup_vhosts : []
+# NB: see vars/main.yml.example for how to specify vhosts and their settings.
+
+email_auto_client_setup_defaults:
+     setup_MS: True
+     setup_TB: True
+     setup_vhost: False

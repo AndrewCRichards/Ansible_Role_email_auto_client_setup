@@ -1,0 +1,14 @@
+---
+# Esp. see answer by reegnz to
+# https://stackoverflow.com/questions/21892603/how-to-make-ansible-execute-a-shell-script-if-a-package-is-not-installed
+- name: Check if {{email_auto_client_setup_web_server_package_name}} is installed
+  package:
+    name: "{{email_auto_client_setup_web_server_package_name}}"
+    state: present
+  become: True
+  # Need Ansible 2.2+ since using "check_mode: true", much more elegant than pre-2.2 workarounds,
+  check_mode: true
+  register: web_server_check
+
+- fail: msg="{{email_auto_client_setup_web_server_package_name}} not installed, can't continue"
+  when: web_server_check.changed
