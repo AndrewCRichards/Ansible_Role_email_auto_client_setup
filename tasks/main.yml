@@ -30,15 +30,15 @@
 - include: check_web_server_installed.yml 
 
 - include: setup_TB_autoconfig.yml
-  with_items : "{{email_auto_client_setup_vhosts}}"
+  with_items: "{{ email_auto_client_setup_vhosts }}"
 
 - include: setup_MS_autodiscover.yml
-  with_items : "{{email_auto_client_setup_vhosts}}"
+  with_items: "{{ email_auto_client_setup_vhosts }}"
 
 - include: enable_apache_required_modules.yml 
   when: email_auto_client_setup_web_server_package_name == "apache2" and
         email_auto_client_setup_web_server_modules_etc == True
 
 - include: apache_virtualhost_config.yml
-  with_items : "{{email_auto_client_setup_vhosts}}"
+  with_items: "{{ email_auto_client_setup_vhosts }}"
   when: email_auto_client_setup_web_server_package_name == "apache2"

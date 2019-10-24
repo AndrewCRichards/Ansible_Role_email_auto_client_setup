@@ -19,8 +19,8 @@
 - name: Generate virtualhost file
   become: True
   template:
-    src   : "{{lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['shared-auto.vhost.j2']}) }}"
-    dest: "/etc/apache2/sites-available/{{item.domain_name}}.conf"
+    src: "{{ lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['shared-auto.vhost.j2']}) }}"
+    dest: "/etc/apache2/sites-available/{{ item.domain_name }}.conf"
     group: root
     owner: root
     mode: 0644

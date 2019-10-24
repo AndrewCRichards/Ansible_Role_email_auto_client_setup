@@ -13,7 +13,7 @@ email_auto_client_setup_template_locations:
     - "{{ role_path }}/templates/local"
     - "{{ role_path }}/templates"
 
-email_auto_client_setup_vhosts : []
+email_auto_client_setup_vhosts: []
 # NB: see vars/main.yml.example for how to specify vhosts and their settings.
 
 email_auto_client_setup_defaults:

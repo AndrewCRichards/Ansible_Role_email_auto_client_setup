@@ -25,22 +25,22 @@
 # In addition Microsoft's own diagnostics tool looks for Autodiscover/Autodiscover.xml
 # - set this up using an alias in the vhost file later.
 
-- name : Create directories for Microsoft email settings files
-  become : True
-  file :
-    state : directory
-    dest  : "{{item.document_root}}/autodiscover"
-    group : root
-    owner : root
-    mode  : 0755
+- name: Create directories for Microsoft email settings files
+  become: True
+  file:
+    state: directory
+    dest: "{{ item.document_root }}/autodiscover"
+    group: root
+    owner: root
+    mode: 0755
   when: item.setup_MS|default(email_auto_client_setup_defaults.setup_MS)
 
-- name : generate Microsoft email settings script to go in /autodiscover...
-  become : True
-  template :
-    src   : "{{lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['MS-autodiscover-xml.php.j2']}) }}"
-    dest  : "{{item.document_root}}/autodiscover/autodiscover_xml.php"
-    group : root
-    owner : root
-    mode  : 0644
+- name: generate Microsoft email settings script to go in /autodiscover...
+  become: True
+  template:
+    src: "{{ lookup('first_found',{'paths' : email_auto_client_setup_template_locations, 'files' : ['MS-autodiscover-xml.php.j2']}) }}"
+    dest: "{{ item.document_root }}/autodiscover/autodiscover_xml.php"
+    group: root
+    owner: root
+    mode: 0644
   when: item.setup_MS|default(email_auto_client_setup_defaults.setup_MS)
