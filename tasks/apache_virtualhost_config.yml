@@ -30,8 +30,8 @@
 
 - name: Enable site
   become: True
-  shell: "a2ensite {{item.domain_name}}"
+  shell: "a2ensite {{ item.domain_name }}"
   register: apache_ensite
-  changed_when: apache_ensite.stdout.endswith('already enabled') == false
+  changed_when: not apache_ensite.stdout.endswith('already enabled')
   notify: [ "restart apache" ]
   when: item.setup_vhost|default(email_auto_client_setup_defaults.setup_vhost)
